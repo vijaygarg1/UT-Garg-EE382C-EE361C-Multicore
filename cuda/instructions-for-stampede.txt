@@ -1,0 +1,74 @@
+
+Steps to run Cuda programs on Stampede
+
+
+
+0. SSH to stampede
+
+ssh userid@stampede.tacc.utexas.edu
+
+
+You mave to finish your two step authentication.
+
+
+1. Ensure that you have access to cuda software by loading cuda module using the command:
+
+module load cuda
+
+
+2. compile your cuda program such as hello.cu by using the following command
+
+nvcc -arch=compute_35 -code=sm_35 -o hello.out hello.cu
+
+This command should produce hello.out 
+
+
+3. Create a batch file hello-batch
+
+#!/bin/bash
+#SBATCH -J myGPU           # job name
+#SBATCH -o myGPU%j       # output and error file name (%j expands to jobID)
+#SBATCH -n 1              # total number of mpi tasks requested
+#SBATCH -p gpudev     # queue (partition) -- normal, development, etc.
+#SBATCH -t 00:00:20        # run time (hh:mm:ss) - 20 seconds
+#SBATCH -A EE-382C-EE361C-Multi
+#SBATCH --mail-user=user@ece.utexas.edu # replace by your email
+#SBATCH --mail-type=begin  # email me when the job starts
+#SBATCH --mail-type=end    # email me when the job finishes
+./hello.out 
+
+
+Note that '#' should be there as shown 
+
+4. submit the job by running
+
+sbatch hello-batch
+
+It should show a message something like
+
+-----------------------------------------------------------------
+              Welcome to the Stampede Supercomputer              
+-----------------------------------------------------------------
+
+No reservation for this job
+--> Verifying valid submit host (login3)...OK
+--> Verifying valid jobname...OK
+--> Enforcing max jobs per user...OK
+--> Verifying availability of your home dir (/home1/02223/vkgarg)...OK
+--> Verifying availability of your work dir (/work/02223/vkgarg)...OK
+--> Verifying valid ssh keys...OK
+--> Verifying access to desired queue (gpudev)...OK
+--> Verifying job request is within current queue limits...OK
+--> Checking available allocation (EE-382C-EE361C-Multi)...OK
+Submitted batch job 7713810
+
+
+5. The output of your job will appear in a file such as 
+myGPU7713810
+
+6. You can change options in the batch file, if you want.
+For example, if you do not want email on job completion, then you can remove the
+mail commands.
+
+
+
