@@ -1,0 +1,3 @@
+
+gcc -pthread $1
+
