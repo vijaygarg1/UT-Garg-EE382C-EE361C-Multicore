@@ -1,10 +1,11 @@
+package q3;
+
 import org.junit.Assert;
 import org.junit.Test;
-import q3.Monkey;
 
 import java.util.Random;
 
-public class Q3Test {
+public class SimpleTest {
 
     // monkey with different directions can be executed by threads
     class ThreadMonkey implements Runnable {
