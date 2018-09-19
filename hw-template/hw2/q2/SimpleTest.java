@@ -1,7 +1,8 @@
+package q2;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class Q2Test {
+public class SimpleTest {
 
     private static final int OPERATIONS = 120000;
 
