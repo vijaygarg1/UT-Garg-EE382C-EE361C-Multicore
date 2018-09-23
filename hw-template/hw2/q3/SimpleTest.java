@@ -14,6 +14,8 @@ public class SimpleTest {
 
         private int direction;
 
+        private int ix;
+
         ThreadMonkey(Monkey monkey, int direction) {
             this.monkey = monkey;
             this.direction = direction;
