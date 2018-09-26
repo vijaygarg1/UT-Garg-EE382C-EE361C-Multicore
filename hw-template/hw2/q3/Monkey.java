@@ -15,7 +15,8 @@ public class Monkey {
     private static final Condition maybeSafeToCross = ropeLock.newCondition();
 
     public Monkey() {
-        monkeyIndex = ThreadLocal.withInitial(() -> -1);
+        monkeyIndex = new ThreadLocal<Integer>();
+        monkeyIndex.set(0);
     }
 
     private boolean AreOpposingMonkeys(int direction) {
