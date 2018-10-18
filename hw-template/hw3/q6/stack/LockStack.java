@@ -1,29 +1,50 @@
 package stack;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 public class LockStack implements MyStack {
-// you are free to add members
+    Node top;
+    ReentrantLock lock;
 	
-  public LockStack() {
-	  // implement your constructor here
-  }
-  
-  public boolean push(Integer value) {
-	  // implement your push method here
-	  return false;
-  }
-  
-  public Integer pop() throws EmptyStack {
-	  // implement your pop method here
-	  return null;
-  }
-  
-  protected class Node {
-	  public Integer value;
-	  public Node next;
-		    
-	  public Node(Integer x) {
-		  value = x;
-		  next = null;
-	  }
-  }
+    public LockStack() {
+        top = null;
+        lock = new ReentrantLock();
+    }
+
+    public boolean push(Integer value) {
+        lock.lock();
+        try {
+            Node node = new Node(value);
+            node.next = top;
+            top = node;
+        } finally {
+            lock.unlock();
+        }
+        return false;
+    }
+
+    public Integer pop() throws EmptyStack {
+        lock.lock();
+        if (top == null) {
+            lock.unlock();
+            throw new EmptyStack();
+        }
+        Node oldTop = top;
+        try {
+            top = top.next;
+        } finally {
+            lock.unlock();
+        }
+        return oldTop.value;
+    }
+
+    protected class Node {
+        public Integer value;
+        public Node next;
+
+        public Node(Integer x) {
+            value = x;
+            next = null;
+        }
+    }
 }
