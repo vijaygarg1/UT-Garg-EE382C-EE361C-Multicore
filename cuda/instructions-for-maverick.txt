@@ -1,14 +1,14 @@
 
-Steps to run Cuda programs on Stampede
+Steps to run Cuda programs on Maverick
 
 
 
-0. SSH to stampede
+0. SSH to Maverick
 
-ssh userid@stampede.tacc.utexas.edu
+ssh userid@maverick.tacc.utexas.edu
 
 
-You mave to finish your two step authentication.
+You may need to finish your two step authentication.
 
 
 1. Ensure that you have access to cuda software by loading cuda module using the command:
@@ -28,15 +28,15 @@ This command should produce hello.out
 #!/bin/bash
 #SBATCH -J myGPU           # job name
 #SBATCH -o myGPU%j       # output and error file name (%j expands to jobID)
-#SBATCH -n 1              # total number of mpi tasks requested
-#SBATCH -p gpudev     # queue (partition) -- normal, development, etc.
+#SBATCH -N 2              # total number of nodes
+#SBATCH -n 4              # total number of cores
+#SBATCH -p gpu     # queue (partition) -- normal, development, etc.
 #SBATCH -t 00:00:20        # run time (hh:mm:ss) - 20 seconds
-#SBATCH -A EE-382C-EE361C-Multi
+#SBATCH -A EE-382C-EE-361C-Mult
 #SBATCH --mail-user=user@ece.utexas.edu # replace by your email
 #SBATCH --mail-type=begin  # email me when the job starts
 #SBATCH --mail-type=end    # email me when the job finishes
-./hello.out 
-
+./hello.out
 
 Note that '#' should be there as shown 
 
@@ -46,25 +46,25 @@ sbatch hello-batch
 
 It should show a message something like
 
------------------------------------------------------------------
-              Welcome to the Stampede Supercomputer              
------------------------------------------------------------------
+
+----------------------------------------------------------------
+          Welcome to the Maverick Supercomputer                 
+----------------------------------------------------------------
 
 No reservation for this job
---> Verifying valid submit host (login3)...OK
+--> Verifying valid submit host (login2)...OK
 --> Verifying valid jobname...OK
 --> Enforcing max jobs per user...OK
---> Verifying availability of your home dir (/home1/02223/vkgarg)...OK
---> Verifying availability of your work dir (/work/02223/vkgarg)...OK
+--> Verifying availability of your home dir (/home/02223/vkgarg)...OK
+--> Verifying availability of your work dir (/work/02223/vkgarg/maverick)...OK
 --> Verifying valid ssh keys...OK
---> Verifying access to desired queue (gpudev)...OK
+--> Verifying access to desired queue (gpu)...OK
 --> Verifying job request is within current queue limits...OK
---> Checking available allocation (EE-382C-EE361C-Multi)...OK
-Submitted batch job 7713810
-
+--> Checking available allocation (EE-382C-EE-361C-Mult)...OK
+Submitted batch job 861245
 
 5. The output of your job will appear in a file such as 
-myGPU7713810
+myGPU861245
 
 6. You can change options in the batch file, if you want.
 For example, if you do not want email on job completion, then you can remove the
