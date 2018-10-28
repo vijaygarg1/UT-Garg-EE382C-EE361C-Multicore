@@ -7,85 +7,81 @@
 #include <cmath>
 using namespace std;
 
-int populate_array(vector<int>* arr, int* len) {
-  ifstream infile( "inp.txt" );
-  if (!infile.is_open()) {
-    cout<<"File failed to open"<<endl;
-    return 0;
-  }
-  string line;
-  while (getline(infile, line))
-  {
-    istringstream ss(line);
-
-    while (ss)
-    {
-      string s;
-      if (!getline(ss, s, ',')) break;
-      (*len)++;
-      arr->push_back(stoi(s));
+__global__ void min2(int *arr, int *i) {
+    int a = arr[2 * *i * blockIdx.x]; int b = arr[2 * *i * blockIdx.x + *i];
+    if (a < b) {
+        arr[2 * *i * blockIdx.x] = a;
+    } else {
+        arr[2 * *i * blockIdx.x] = b;
     }
-  }
-  return 1;
 }
 
-__global__ void min_seq(int *arr, int *seq_result, int chunk_len, int full_len) {
-  // TODO: Iterate over chunk until done or until N is reached
-  int min = 1000;
-  int i = blockIdx.x;
-  while (i - blockIdx.x < chunk_len && i < full_len) {
-    if (arr[i] < min) {
-      min = arr[i];
+int populate_array(vector<int>* arr, int* len) {
+    ifstream infile( "inp.txt" );
+    if (!infile.is_open()) {
+        cout<<"File failed to open"<<endl;
+        return 0;
     }
-  }
-  seq_result[blockIdx.x] = min;
+    string line;
+    while (getline(infile, line))
+    {
+        istringstream ss(line);
+        while (ss)
+        {
+            string s;
+            if (!getline(ss, s, ',')) break;
+
+            (*len)++;
+            arr->push_back(stoi(s));
+
+        }
+    }
+    return 1;
 }
 
 int main () {
-  vector<int> arr;
-  int len = 0;
-  if (!populate_array(&arr, &len)) {
-    return 0;
-  }
-  cout<<arr[0]<<endl;
-  cout<<len<<endl;
-  cout<<log(log(len))<<endl;
-
-  int chunk_len = (int)log(log(len))
-  int N;
-  if (chunk_len >= 2) { // If not skip sequential phase
-    N = (int) (len / chunk_len) + 1 // Rounded up to not miss any
+    vector<int> arr;
+    int len = 0;
+    if (!populate_array(&arr, &len)) {
+      return 0;
+    }
 
     int full_size = len * sizeof(int);
-    int seq_result_size = N * sizeof(int);
 
-    // Full array and result of sequential phase
+    // Full array
     int *d_arr;
-    int *seq_result;
-    int *d_seq_result;
 
     cudaMalloc((void **)&d_arr, full_size);
-    cudaMalloc((void **)&d_a_result, seq_result_size)
+    
+    int N = len/2;
 
-    seq_result = (int *)malloc(seq_result_size);
+    int i = 1;
+    int *d_i;
+    cudaMalloc((void **)&d_i, sizeof(int));
+    while (2*i < len) {
+        // Copy array and i over
+        cudaMemcpy(d_arr, arr.data(), full_size, cudaMemcpyHostToDevice);
+        cudaMemcpy(d_i, &i, sizeof(int), cudaMemcpyHostToDevice);
 
-    // Copy full array
-    cudaMemcpy(d_arr, arr.data(), full_size, cudaMemcpyHostToDevice);
+        min2<<<N,1>>>(d_arr, d_i);
 
-    // TODO: Figure out if rounding will cause any missed elements
-    min_seq<<<N, 1>>>(d_arr, d_seq_result, chunk_len, len);
+        // Update
+        i *= 2 ;
+        N = (int)((len + 1) / (2 * i));
+        cudaMemcpy(arr.data(), d_arr, full_size, cudaMemcpyDeviceToHost);
+    }
+    
+    // Sequential compare
+    int min;
+    int a = arr[0]; int b = arr[i];
+    if (a < b) {
+        min = a;
+    } else {
+        min = b;
+    }
 
-    // Save results of sequential phase
-    cudaMemcpy(seq_result, d_seq_result, seq_result_size, cudaMemcpyDeviceToHost);
-  } else {
-    N = len;
-  }
-  
+    cout<<"Minimum: " << min << endl;
 
-  // Cleanup
-  free(seq_result);
-  cudaFree(d_arr); cudaFree(d_seq_result);
-
-
-
+    cudaFree(d_arr); 
+    return 0;
 }
