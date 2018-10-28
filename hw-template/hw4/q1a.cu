@@ -31,6 +31,14 @@ int populate_array(vector<int>* arr, int* len) {
 
 __global__ void min_seq(int *arr, int *seq_result, int chunk_len, int full_len) {
   // TODO: Iterate over chunk until done or until N is reached
+  int min = 1000;
+  int i = blockIdx.x;
+  while (i - blockIdx.x < chunk_len && i < full_len) {
+    if (arr[i] < min) {
+      min = arr[i];
+    }
+  }
+  seq_result[blockIdx.x] = min;
 }
 
 int main () {
@@ -43,29 +51,36 @@ int main () {
   cout<<len<<endl;
   cout<<log(log(len))<<endl;
 
-  int N = (int) (len / log(log(len)))
+  int chunk_len = (int)log(log(len))
+  int N;
+  if (chunk_len >= 2) { // If not skip sequential phase
+    N = (int) (len / chunk_len) + 1 // Rounded up to not miss any
 
-  int full_size = len * sizeof(int);
-  int seq_result_size = N * sizeof(int);
+    int full_size = len * sizeof(int);
+    int seq_result_size = N * sizeof(int);
 
-  // Full array and result of sequential phase
-  int *d_arr;
-  int *seq_result;
-  int *d_seq_result;
+    // Full array and result of sequential phase
+    int *d_arr;
+    int *seq_result;
+    int *d_seq_result;
 
-  cudaMalloc((void **)&d_arr, full_size);
-  cudaMalloc((void **)&d_a_result, seq_result_size)
+    cudaMalloc((void **)&d_arr, full_size);
+    cudaMalloc((void **)&d_a_result, seq_result_size)
 
-  seq_result = (int *)malloc(seq_result_size);
+    seq_result = (int *)malloc(seq_result_size);
 
-  // Copy full array
-  cudaMemcpy(d_arr, arr.data(), full_size, cudaMemcpyHostToDevice);
+    // Copy full array
+    cudaMemcpy(d_arr, arr.data(), full_size, cudaMemcpyHostToDevice);
 
-  // TODO: Figure out if rounding will cause any missed elements
-  min_seq<<<N, 1>>>(d_arr, d_seq_result, );
+    // TODO: Figure out if rounding will cause any missed elements
+    min_seq<<<N, 1>>>(d_arr, d_seq_result, chunk_len, len);
 
-  // Save results of sequential phase
-  cudaMemcpy(seq_result, d_seq_result, seq_result_size, cudaMemcpyDeviceToHost);
+    // Save results of sequential phase
+    cudaMemcpy(seq_result, d_seq_result, seq_result_size, cudaMemcpyDeviceToHost);
+  } else {
+    N = len;
+  }
+  
 
   // Cleanup
   free(seq_result);
