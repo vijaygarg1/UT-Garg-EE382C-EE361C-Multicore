@@ -82,6 +82,6 @@ int main () {
 
     cout<<"Minimum: " << min << endl;
 
-    cudaFree(d_arr); 
+    cudaFree(d_arr); cudaFree(d_i);
     return 0;
 }
