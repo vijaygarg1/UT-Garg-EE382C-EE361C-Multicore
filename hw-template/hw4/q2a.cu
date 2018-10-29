@@ -38,6 +38,22 @@ __global__ void count_b(int *arr, int *B, int *chunk_len, int *len) {
     }
 }
 
+__global__ void sum_c(int *B, int *C) {
+    if (threadIdx.x < 10) C[threadIdx.x] = B[threadIdx.x];
+    __syncthreads();
+    for (int d = 1; d < 10; d*=2) {
+        int val;
+        if (threadIdx.x >= d) {
+            val = C[threadIdx.x - d];
+        }
+        __syncthreads();
+        if (threadIdx.x >= d) {
+            C[threadIdx.x] += val;
+        }
+        __syncthreads();
+    }
+}
+
 int populate_array(vector<int>* arr, int* len) {
     ifstream infile( "inp.txt" );
     if (!infile.is_open()) {
@@ -97,7 +113,7 @@ void a(vector<int> arr, int len) {
     cudaFree(d_arr); cudaFree(d_B); cudaFree(d_chunk_len); cudaFree(d_len);
 }
 
-void b(vector<int> arr, int len) {
+int* b(vector<int> arr, int len) {
     int size = 10 * sizeof(int);
     int full_size = len * sizeof(int);
 
@@ -130,6 +146,33 @@ void b(vector<int> arr, int len) {
         cout << i << ": " << B[i] << endl;
     }
     cudaFree(d_arr); cudaFree(d_B); cudaFree(d_chunk_len); cudaFree(d_len);
+
+    int* retval = new int[10];
+    copy(B, B+10, retval);
+    return retval;
+}
+
+void c(int * B) {
+    for (int i = 0; i < 10; i++) {
+        cout << i << " old: " << B[i] << endl;
+    }
+    int *d_B; int *d_C;
+    int size = 10 * sizeof(int);
+    int *C = (int*)malloc(size);
+    cudaMalloc((void**)&d_B, size);
+    cudaMalloc((void**)&d_C, size);
+    cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+    sum_c<<<1,10>>>(d_B, d_C);
+
+    cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < 10; i++) {
+        cout << i << ": " << C[i] << endl;
+    }
+
+    cudaFree(d_B); cudaFree(d_C);
+    free(C);
 }
 
 int main () {
@@ -140,5 +183,7 @@ int main () {
     }
 
     a(arr, len);
-    b(arr, len);
+    int* B = b(arr, len);
+    c(B);
+    delete [] B;
 }
