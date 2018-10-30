@@ -39,13 +39,7 @@ int populate_array(vector<int>* arr, int* len) {
     return 1;
 }
 
-int main () {
-    vector<int> arr;
-    int len = 0;
-    if (!populate_array(&arr, &len)) {
-      return 0;
-    }
-
+void a(vector<int> arr, int len) {
     int full_size = len * sizeof(int);
 
     // Full array
@@ -83,5 +77,16 @@ int main () {
     cout<<"Minimum: " << min << endl;
 
     cudaFree(d_arr); cudaFree(d_i);
+}
+
+int main () {
+    vector<int> arr;
+    int len = 0;
+    if (!populate_array(&arr, &len)) {
+      return 0;
+    }
+
+    a(arr, len);
+    
     return 0;
 }

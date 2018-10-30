@@ -10,7 +10,9 @@ __global__ void count_a(int *arr, int *B, int *chunk_len, int *len) {
     int start = threadIdx.x * *chunk_len;
     int i = start;
     while (i - start < *chunk_len && i < *len) {
-        atomicAdd(B + (arr[i] / 100), 1);
+        if (arr[i] / 100 < 1000) {
+            atomicAdd(B + (arr[i] / 100), 1);
+        }
         i++;
     }
 }
@@ -27,7 +29,9 @@ __global__ void count_b(int *arr, int *B, int *chunk_len, int *len) {
     int start = index * *chunk_len;
     int i = start;
     while(i - start < *chunk_len && i < *len) {
-        atomicAdd(s_B + (arr[i] / 100), 1);
+        if (arr[i] / 100 < 1000) {
+            atomicAdd(s_B + (arr[i] / 100), 1);
+        }
         i++;
     }
     __syncthreads();
@@ -108,7 +112,7 @@ void a(vector<int> arr, int len) {
     cudaMemcpy(B, d_B, size, cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < 10; i++) {
-        cout << i << ": " << B[i] << endl;
+        cout << "[" << i*100 << "," << (i+1)*100 - 1 << "]" << ": " << B[i] << endl;
     }
     cudaFree(d_arr); cudaFree(d_B); cudaFree(d_chunk_len); cudaFree(d_len);
 }
@@ -143,7 +147,7 @@ int* b(vector<int> arr, int len) {
     cudaMemcpy(B, d_B, size, cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < 10; i++) {
-        cout << i << ": " << B[i] << endl;
+        cout << "[" << i*100 << "," << (i+1)*100 - 1 << "]" << ": " << B[i] << endl;
     }
     cudaFree(d_arr); cudaFree(d_B); cudaFree(d_chunk_len); cudaFree(d_len);
 
@@ -153,9 +157,6 @@ int* b(vector<int> arr, int len) {
 }
 
 void c(int * B) {
-    for (int i = 0; i < 10; i++) {
-        cout << i << " old: " << B[i] << endl;
-    }
     int *d_B; int *d_C;
     int size = 10 * sizeof(int);
     int *C = (int*)malloc(size);
@@ -168,7 +169,7 @@ void c(int * B) {
     cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < 10; i++) {
-        cout << i << ": " << C[i] << endl;
+        cout << "[" << i*100 << "," << (i+1)*100 - 1 << "]" << ": " << C[i] << endl;
     }
 
     cudaFree(d_B); cudaFree(d_C);
