@@ -1,0 +1,11 @@
+Q4
+PARTA
+
+Template for part a: hw2_q4_a.c
+Input files:
+1) size 100x100: file1.txt, file2.txt, file_out.txt
+2) random test size: mat_a.txt, mat_b.txt, mat_out.txt
+
+
+PARTB
+Template for part b: hw2_q4_b.c
