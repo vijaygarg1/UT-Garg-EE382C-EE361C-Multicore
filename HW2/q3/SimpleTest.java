@@ -41,6 +41,7 @@ public class SimpleTest {
         for (int i = 0; i < 1000; ++i) {
             // all thread monkeys have one same direction
             threads[i] = new Thread(new ThreadMonkey(monkey, 1));
+            System.out.println("Current Thread is: " + threads[i].getId());
             threads[i].start();
             // assert at any time the number of monkeys on the rope is <= 3
             Assert.assertTrue(monkey.getNumMonkeysOnRope() <= 3);
@@ -87,7 +88,8 @@ public class SimpleTest {
 
         // you need to make sure if Kong is start, the other monkey must stop and clear the rope
         for (int i = 0; i < 1000; ++i) {
-            if (i == kongThreadID) threads[i] = new Thread(new ThreadMonkey(monkey, -1));
+            if (i == kongThreadID)
+                threads[i] = new Thread(new ThreadMonkey(monkey, -1));
             else threads[i] = new Thread(new ThreadMonkey(monkey, (int) Math.round(Math.random())));
             threads[i].start();
             Assert.assertTrue(monkey.getNumMonkeysOnRope() <= 3);
